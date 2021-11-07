@@ -806,8 +806,7 @@ def debug(select):
         np.random.seed(0)
 
         # Data
-        # np_data = np.random.uniform(-1, 1, n)
-        np_data = np.ones(n)
+        np_data = np.random.uniform(-1, 1, n)
         pd_data = paddle.to_tensor(np_data)
 
         # Numpy FFT
@@ -816,7 +815,7 @@ def debug(select):
         np_rfft = np.fft.rfft(np_data, norm=norm)
         np_irfft = np.fft.ifft(np_rfft, norm=norm)
 
-        # Pypaddle FFT
+        # paddle FFT
         obj = DFT(n, norm)
         pd_dft = obj.dft(pd_data, paddle.zeros_like(pd_data))
         pd_idft = obj.idft(pd_dft[0], pd_dft[1])
@@ -850,15 +849,14 @@ def debug(select):
         pad_mode = 'reflect'
 
         # Data
-        # np_data = np.random.uniform(-1, 1, data_length)
-        np_data = np.ones(data_length)
+        np_data = np.random.uniform(-1, 1, data_length)
         pd_data = paddle.to_tensor(np_data)
 
         # Numpy stft matrix
         np_stft_matrix = librosa.stft(y=np_data, n_fft=n_fft,
             hop_length=hop_length, window=window, center=center).T
 
-        # Pypaddle stft matrix
+        # paddle stft matrix
         pd_stft_extractor = STFT(n_fft=n_fft, hop_length=hop_length,
             win_length=win_length, window=window, center=center, pad_mode=pad_mode,
             freeze_parameters=True)
@@ -1065,8 +1063,7 @@ if __name__ == '__main__':
     top_db = 80.0
 
     # Data
-    # np_data = np.random.uniform(-1, 1, data_length)
-    np_data = np.ones(data_length)
+    np_data = np.random.uniform(-1, 1, data_length)
     pd_data = paddle.to_tensor(np_data)
 
     # paddle

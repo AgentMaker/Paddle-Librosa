@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0c0edf53-8be9-4dca-b243-c155b8ea0df8" name="Default Changelist" comment="" />
+    <list default="true" id="0c0edf53-8be9-4dca-b243-c155b8ea0df8" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/paddlelibrosa/stft.py" beforeDir="false" afterPath="$PROJECT_DIR$/paddlelibrosa/stft.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1ycEIlAPYnHNMxdkFZnhNSFo1R2" />
   <component name="PropertiesComponent">
@@ -24,7 +29,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.example1">
+  <component name="RunManager" selected="Python.stft (1)">
     <configuration name="augmentation (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="paddlelibrosa" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -132,9 +137,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.stft (1)" />
         <item itemvalue="Python.example1" />
         <item itemvalue="Python.augmentation (1)" />
-        <item itemvalue="Python.stft (1)" />
         <item itemvalue="Python.augmentation" />
         <item itemvalue="Python.stft" />
       </list>
@@ -152,5 +157,16 @@
       <updated>1632542398298</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
