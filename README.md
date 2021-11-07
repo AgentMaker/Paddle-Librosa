@@ -22,7 +22,7 @@ win_length = 2048
 hop_length = 512
 n_mels = 128
 
-batch_audio = paddle.empty(batch_size, sample_rate).uniform_(-1, 1)  # (batch_size, sample_rate)
+batch_audio = paddle.uniform((batch_size, sample_rate))  # (batch_size, sample_rate)
 
 # Paddle-Librosa feature extractor the same as librosa.feature.melspectrogram()
 feature_extractor = paddle.nn.Sequential(
