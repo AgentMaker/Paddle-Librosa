@@ -196,22 +196,28 @@ class STFT(DFTBase):
 
         out_channels = n_fft // 2 + 1
 
+        # Initialize Conv1d weights.
+        # (n_fft // 2 + 1, 1, n_fft)
+        conv_real_weight = paddle.ParamAttr(
+            initializer=nn.initializer.Assign(
+                paddle.unsqueeze(paddle.to_tensor(
+                        np.real(self.W[:, 0 : out_channels] * fft_window[:, None]).T), axis=1)
+            )
+        )
         self.conv_real = nn.Conv1D(in_channels=1, out_channels=out_channels,
             kernel_size=n_fft, stride=self.hop_length, padding=0, dilation=1,
-            groups=1, bias_attr=False)
+            groups=1, weight_attr=conv_real_weight, bias_attr=False)
 
+        # (n_fft // 2 + 1, 1, n_fft)
+        conv_imag_weight = paddle.ParamAttr(
+            initializer=nn.initializer.Assign(
+                paddle.unsqueeze(paddle.to_tensor(
+                    np.imag(self.W[:, 0: out_channels] * fft_window[:, None]).T), axis=1)
+            )
+        )
         self.conv_imag = nn.Conv1D(in_channels=1, out_channels=out_channels,
             kernel_size=n_fft, stride=self.hop_length, padding=0, dilation=1,
-            groups=1, bias_attr=False)
-
-        # Initialize Conv1d weights.
-        self.conv_real.weight.data = paddle.unsqueeze(paddle.to_tensor(
-            np.real(self.W[:, 0 : out_channels] * fft_window[:, None]).T), axis=1)
-        # (n_fft // 2 + 1, 1, n_fft)
-
-        self.conv_imag.weight.data = paddle.unsqueeze(paddle.to_tensor(
-            np.imag(self.W[:, 0 : out_channels] * fft_window[:, None]).T), axis=1)
-        # (n_fft // 2 + 1, 1, n_fft)
+            groups=1, weight_attr=conv_imag_weight, bias_attr=False)
 
         if freeze_parameters:
             for param in self.parameters():
@@ -326,27 +332,33 @@ class ISTFT(DFTBase):
         """
         self.W = self.idft_matrix(self.n_fft) / self.n_fft
 
-        self.conv_real = nn.Conv1D(in_channels=self.n_fft, out_channels=self.n_fft,
-            kernel_size=1, stride=1, padding=0, dilation=1,
-            groups=1, bias_attr=False)
-
-        self.conv_imag = nn.Conv1D(in_channels=self.n_fft, out_channels=self.n_fft,
-            kernel_size=1, stride=1, padding=0, dilation=1,
-            groups=1, bias_attr=False)
-
         ifft_window = librosa.filters.get_window(self.window, self.win_length, fftbins=True)
         # (win_length,)
 
         # Pad the window to n_fft
         ifft_window = librosa.util.pad_center(ifft_window, self.n_fft)
 
-        self.conv_real.weight.data = paddle.to_tensor(
-            np.real(self.W * ifft_window[None, :]).T).unsqueeze(2)
         # (n_fft // 2 + 1, 1, n_fft)
+        conv_real_weight = paddle.ParamAttr(
+            initializer=nn.initializer.Assign(
+                paddle.to_tensor(
+                    np.real(self.W * ifft_window[None, :]).T).unsqueeze(2)
+            )
+        )
+        self.conv_real = nn.Conv1D(in_channels=self.n_fft, out_channels=self.n_fft,
+                                   kernel_size=1, stride=1, padding=0, dilation=1,
+                                   groups=1, weight_attr=conv_real_weight, bias_attr=False)
 
-        self.conv_imag.weight.data = paddle.to_tensor(
-            np.imag(self.W * ifft_window[None, :]).T).unsqueeze(2)
         # (n_fft // 2 + 1, 1, n_fft)
+        conv_imag_weight = paddle.ParamAttr(
+            initializer=nn.initializer.Assign(
+                paddle.to_tensor(
+                    np.imag(self.W * ifft_window[None, :]).T).unsqueeze(2)
+            )
+        )
+        self.conv_imag = nn.Conv1D(in_channels=self.n_fft, out_channels=self.n_fft,
+                                   kernel_size=1, stride=1, padding=0, dilation=1,
+                                   groups=1, weight_attr=conv_imag_weight, bias_attr=False)
 
     def init_overlap_add_window(self):
         r"""Initialize overlap add window for reconstruct time domain signals.
@@ -368,21 +380,26 @@ class ISTFT(DFTBase):
         Args:
             frames_num: int
         """
-
-        self.reverse = nn.Conv1D(in_channels=self.n_fft // 2 + 1,
-            out_channels=self.n_fft // 2 - 1, kernel_size=1, bias_attr=False)
-
         tmp = np.zeros((self.n_fft // 2 - 1, self.n_fft // 2 + 1, 1))
         tmp[:, 1 : -1, 0] = np.array(np.eye(self.n_fft // 2 - 1)[::-1])
-        self.reverse.weight.data = paddle.to_tensor(tmp)
+        reverse_weight = paddle.ParamAttr(
+            initializer=nn.initializer.Assign(
+                paddle.to_tensor(tmp)
+            )
+        )
         # (n_fft // 2 - 1, n_fft // 2 + 1, 1)
+        self.reverse = nn.Conv1D(in_channels=self.n_fft // 2 + 1,
+                                 out_channels=self.n_fft // 2 - 1, kernel_size=1, weight_attr=reverse_weight, bias_attr=False)
 
         # Use nn.ConvTranspose2d to implement paddle.nn.functional.fold(),
         # because paddle.nn.functional.fold() is not supported by ONNX.
+        overlap_add_weight = paddle.ParamAttr(
+            initializer=nn.initializer.Assign(
+                paddle.to_tensor(np.eye(self.n_fft)[:, None, :, None])
+            )
+        )
         self.overlap_add = nn.Conv2DTranspose(in_channels=self.n_fft,
-            out_channels=1, kernel_size=(self.n_fft, 1), stride=(self.hop_length, 1), bias_attr=False)
-
-        self.overlap_add.weight.data = paddle.to_tensor(np.eye(self.n_fft)[:, None, :, None])
+            out_channels=1, kernel_size=(self.n_fft, 1), stride=(self.hop_length, 1), weight_attr=overlap_add_weight, bias_attr=False)
         # (n_fft, 1, n_fft, 1)
 
         if frames_num:
@@ -722,11 +739,15 @@ class Enframe(nn.Layer):
         """
         super(Enframe, self).__init__()
 
+        enframe_conv_weight = paddle.ParamAttr(
+            initializer=nn.initializer.Assign(
+                paddle.to_tensor(paddle.eye(frame_length).unsqueeze(1))
+            )
+        )
         self.enframe_conv = nn.Conv1D(in_channels=1, out_channels=frame_length,
             kernel_size=frame_length, stride=hop_length,
-            padding=0, bias_attr=False)
+            padding=0, weight_attr=enframe_conv_weight, bias_attr=False)
 
-        self.enframe_conv.weight.data = paddle.to_tensor(paddle.eye(frame_length).unsqueeze(1))
         self.enframe_conv.weight.stop_gradient = True
 
     def forward(self, input):
@@ -785,7 +806,8 @@ def debug(select):
         np.random.seed(0)
 
         # Data
-        np_data = np.random.uniform(-1, 1, n)
+        # np_data = np.random.uniform(-1, 1, n)
+        np_data = np.ones(n)
         pd_data = paddle.to_tensor(np_data)
 
         # Numpy FFT
@@ -828,7 +850,8 @@ def debug(select):
         pad_mode = 'reflect'
 
         # Data
-        np_data = np.random.uniform(-1, 1, data_length)
+        # np_data = np.random.uniform(-1, 1, data_length)
+        np_data = np.ones(data_length)
         pd_data = paddle.to_tensor(np_data)
 
         # Numpy stft matrix
@@ -1042,7 +1065,8 @@ if __name__ == '__main__':
     top_db = 80.0
 
     # Data
-    np_data = np.random.uniform(-1, 1, data_length)
+    # np_data = np.random.uniform(-1, 1, data_length)
+    np_data = np.ones(data_length)
     pd_data = paddle.to_tensor(np_data)
 
     # paddle
