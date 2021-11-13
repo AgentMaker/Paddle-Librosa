@@ -71,11 +71,11 @@ istft_extractor = pl.ISTFT(n_fft=win_length, hop_length=hop_length)
 y = istft_extractor.forward(real, imag, length=batch_audio.shape[-1])    # (batch_size, samples_num)
 ```
 
-## Contact
-AgentMaker: AgentMaker@163.com
-
 ## External links
 Other related repos include:
 
 torchlibrosa: https://github.com/qiuqiangkong/torchlibrosa
 
+## Contact us
+Email : [agentmaker@163.com]()<br>
+QQ Group : 1005109853
