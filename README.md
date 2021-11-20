@@ -3,6 +3,11 @@
 This codebase provides Paddle implementation of some librosa functions. If users previously used for training cpu-extracted features from librosa, but want to add GPU acceleration during training and evaluation, Paddle-Librosa will provide almost identical features to standard paddlelibrosa functions (numerical difference less than 1e-5).
 
 ## Install
+### From PyPI
+```bash
+pip install agentocr 
+```
+### From GitHub
 ```bash
 $ git clone https://github.com/AgentMaker/Paddle-Librosa.git
 $ pip install Paddle-Librosa/
