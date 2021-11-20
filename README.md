@@ -5,7 +5,7 @@ This codebase provides Paddle implementation of some librosa functions. If users
 ## Install
 ### From PyPI
 ```bash
-pip install agentocr 
+pip install paddlelibrosa
 ```
 ### From GitHub
 ```bash
